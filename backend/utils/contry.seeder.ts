@@ -10,7 +10,7 @@ const BATCH_SIZE = 100;
 // DB connection (same style as yours)
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb://localhost:27017/");
+    await mongoose.connect("mongodb://localhost:27017/zon-project");
     console.log("MongoDB Connected Successfully");
   } catch (error) {
     console.log("MongoDB Connection Error", error);
@@ -24,9 +24,9 @@ const generateCountryData = (startIndex: number, batchSize: number) => {
 
   for (let i = startIndex; i < startIndex + batchSize; i++) {
     countries.push({
-      CountryName: `Country ${i + 1}`,
+      countryName: `Country ${i + 1}`,
       countryCode: `C${String(i + 1).padStart(5, "0")}`, // unique code
-      phoneCode: `+${Math.floor(1 + Math.random() * 999)}`,
+    //   phoneCode: `+${Math.floor(1 + Math.random() * 999)}`,
       currency: `CUR${i + 1}`,
       status: Math.random() > 0.2, // mostly active
     });

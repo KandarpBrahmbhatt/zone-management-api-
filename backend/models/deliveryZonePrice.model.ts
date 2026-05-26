@@ -35,55 +35,52 @@
 // );
 
 
-
-import mongoose, {
-    Schema,
-    Document
-} from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IDeliveryZonePrice extends Document {
-
-    postcodePrefixId: mongoose.Types.ObjectId;
-    minWeight: number;
-    maxWeight: number;
-    basePrice: number;
-    status: boolean;
+  postcodePrefixId: mongoose.Types.ObjectId;
+  minWeight: number;
+  maxWeight: number;
+  basePrice: number;
+  status: boolean;
 }
 
 const deliveryZonePriceSchema = new Schema<IDeliveryZonePrice>(
-    {
-        postcodePrefixId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "DeliveryPostcodePrefix",
-            required: true,
-        },
-
-        minWeight: {
-            type: Number,
-            required: true,
-        },
-
-        maxWeight: {
-            type: Number,
-            required: true,
-        },
-
-        basePrice: {
-            type: Number,
-            required: true,
-        },
-
-        status: {
-            type: Boolean,
-            default: true,
-        },
+  {
+    postcodePrefixId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DeliveryPostcodePrefix",
+      required: true,
+      index: true,
     },
-    {
-        timestamps: true,
-    }
+
+    minWeight: {
+      type: Number,
+      required: true,
+    },
+
+    maxWeight: {
+      type: Number,
+      required: true,
+    },
+
+    basePrice: {
+      type: Number,
+      required: true,
+    },
+
+    status: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
 );
 
 export default mongoose.model<IDeliveryZonePrice>(
-    "DeliveryZonePrice",
-    deliveryZonePriceSchema
+  "DeliveryZonePrice",
+  deliveryZonePriceSchema
 );

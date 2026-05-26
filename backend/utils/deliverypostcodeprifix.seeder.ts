@@ -26,9 +26,9 @@ const createCountries = async () => {
 
     for (let i = 0; i < 200; i++) {
         countries.push({
-            CountryName: `Country ${i + 1}`,
+            countryName: `Country ${i + 1}`,
             countryCode: `C${String(i + 1).padStart(5, "0")}`, // unique code
-            phoneCode: `+${Math.floor(1 + Math.random() * 999)}`,
+            // phoneCode: `+${Math.floor(1 + Math.random() * 999)}`,
             currency: `CUR${i + 1}`,
             status: Math.random() > 0.2, // mostly active
         });
@@ -50,6 +50,9 @@ const generateData = (
 
     for (let i = startIndex; i < startIndex + batchSize; i++) {
         data.push({
+            countryId: new mongoose.Types.ObjectId(
+                countryIds[i % countryIds.length]._id
+            ),
             prefix: `DP${String(i + 1).padStart(7, "0")}`, // unique
             description: `Delivery postcode prefix ${i + 1}`,
             status: Math.random() > 0.2,

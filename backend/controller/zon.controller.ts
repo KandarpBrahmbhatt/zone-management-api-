@@ -357,101 +357,183 @@ export const getZoneAnalytics = async (
 
 
 import Country from "../models/country.model";
+import zonModel from "../models/zon.model";
 
 export const getAllZoneData = async () => {
-  try {
-    const data = await Country.aggregate([
-      {
-        $lookup: {
-          from: "deliverypostcodeprefixes",
-          localField: "_id",
-          foreignField: "countryId",
-          as: "postcodePrefixes",
-        },
-      },
+    try {
+        const data = await Country.aggregate([
+            {
+                $lookup: {
+                    from: "deliverypostcodeprefixes",
+                    localField: "_id",
+                    foreignField: "countryId",
+                    as: "postcodePrefixes",
+                },
+            },
 
-      {
-        $unwind: "$postcodePrefixes",
-      },
+            {
+                $unwind: "$postcodePrefixes",
+            },
 
-      {
-        $lookup: {
-          from: "deliveryzoneprices",
-          localField: "postcodePrefixes._id",
-          foreignField: "postcodePrefixId",
-          as: "zonePrices",
-        },
-      },
+            {
+                $lookup: {
+                    from: "deliveryzoneprices",
+                    localField: "postcodePrefixes._id",
+                    foreignField: "postcodePrefixId",
+                    as: "zonePrices",
+                },
+            },
 
-      {
-        $unwind: "$zonePrices",
-      },
+            {
+                $unwind: "$zonePrices",
+            },
 
-      {
-        $lookup: {
-          from: "deliverymarkuppercentages",
-          localField: "zonePrices._id",
-          foreignField: "zonePriceId",
-          as: "markup",
-        },
-      },
+            {
+                $lookup: {
+                    from: "deliverymarkuppercentages",
+                    localField: "zonePrices._id",
+                    foreignField: "zonePriceId",
+                    as: "markup",
+                },
+            },
 
-      {
-        $unwind: {
-          path: "$markup",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
+            {
+                $unwind: {
+                    path: "$markup",
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
 
-      {
-        $project: {
-          _id: 0,
+            {
+                $project: {
+                    _id: 0,
 
-          countryId: "$_id",
-          countryName: 1,
-          countryCode: 1,
-          currency: 1,
+                    countryId: "$_id",
+                    countryName: 1,
+                    countryCode: 1,
+                    currency: 1,
 
-          prefix:
-            "$postcodePrefixes.prefix",
+                    prefix:
+                        "$postcodePrefixes.prefix",
 
-          description:
-            "$postcodePrefixes.description",
+                    description:
+                        "$postcodePrefixes.description",
 
-          minWeight:
-            "$zonePrices.minWeight",
+                    minWeight:
+                        "$zonePrices.minWeight",
 
-          maxWeight:
-            "$zonePrices.maxWeight",
+                    maxWeight:
+                        "$zonePrices.maxWeight",
 
-          basePrice:
-            "$zonePrices.basePrice",
+                    basePrice:
+                        "$zonePrices.basePrice",
 
-          markupPercentage:
-            "$markup.markupPercentage",
+                    markupPercentage:
+                        "$markup.markupPercentage",
 
-          finalPrice: {
-            $add: [
-              "$zonePrices.basePrice",
-              {
-                $multiply: [
-                  "$zonePrices.basePrice",
-                  {
-                    $divide: [
-                      "$markup.markupPercentage",
-                      100,
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        },
-      },
-    ]);
+                    finalPrice: {
+                        $add: [
+                            "$zonePrices.basePrice",
+                            {
+                                $multiply: [
+                                    "$zonePrices.basePrice",
+                                    {
+                                        $divide: [
+                                            "$markup.markupPercentage",
+                                            100,
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                },
+            },
+        ]);
 
-    return data;
-  } catch (error) {
-    console.log(error);
-  }
+        return data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+
+
+
+//create api to zonename and zone code parthi  prefix value fatch karvani 6e
+
+
+// export const newData = async (req: Request, res: Response) => {
+//   try {
+//     const zoneName = req.query.zoneName as string;
+//     const zoneCode = req.query.zoneCode as string;
+
+//     if (!zoneName || !zoneCode) {
+//       return res.status(400).json({
+//         message: "zoneName and zoneCode are required",
+//       });
+//     }
+
+//     const result = await zonModel.findOne({
+//       zoneName,
+//       zoneCode,
+//     });
+
+//     if (!result) {
+//       return res.status(404).json({
+//         message: "Zone not found",
+//       });
+//     }
+
+//     return res.status(200).json({
+//       message: "Success",
+//       prefix: result.prefix,
+//     });
+//   } catch (error) {
+//     console.log("getValue error", error);
+
+//     return res.status(500).json({
+//       message: "Internal server error",
+//     });
+//   }
+// };
+
+
+
+export const newData = async (req: Request, res: Response) => {
+    try {
+        const zoneName = (req.body.zoneName as string)?.trim();
+        const zoneCode = (req.body.zoneCode as string)?.trim();
+        console.log("zoneName:", zoneName);
+        console.log("zoneCode:", zoneCode);
+
+        if (!zoneName || !zoneCode) {
+            return res.status(400).json({
+                message: "zoneName and zoneCode are required",
+            });
+        }
+
+        const result = await zonModel.findOne({
+            zoneName,
+            // zoneCode,
+        });
+console.log("result",result)
+        if (!result) {
+            return res.status(404).json({
+                message: "Zone not found",
+            });
+        }
+
+        return res.status(200).json({
+            message: "Success",
+            prefix: result.prefix,
+        });
+
+    } catch (error) {
+        console.log("error:", error);
+
+        return res.status(500).json({
+            message: "Internal server error",
+        });
+    }
 };
