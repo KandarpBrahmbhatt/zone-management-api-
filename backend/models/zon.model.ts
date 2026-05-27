@@ -1,55 +1,52 @@
 // import mongoose, { Schema, Document } from "mongoose";
-// import { IZone } from "../interfaces/zon.interface";
 
-// export interface IZoneDocument extends IZone, Document {}
+// export interface IZoneDocument extends Document {
+//   zoneName: string;
+//   zoneCode: string;
+//   prefix: string;
+//   waterValue: number;
+//   markupValue: number;
+//   increasePercentage: number;
+//   description?: string;
+//   status: boolean;
+// }
 
 // const zoneSchema = new Schema<IZoneDocument>(
 //   {
 //     zoneName: {
 //       type: String,
 //       required: true,
-//       trim: true,
-//     },
-
-//     prefix: {
-//       type: String,
-//       required: true,
-//       // unique: true,
-//       // uppercase: true,
-//       // trim: true,
 //     },
 
 //     zoneCode: {
 //       type: String,
 //       required: true,
 //       unique: true,
-//       trim: true,
+//     },
+
+//     prefix: {
+//       type: String,
+//       required: true,
 //     },
 
 //     waterValue: {
 //       type: Number,
-//       required: true,
 //       default: 0,
 //     },
 
 //     markupValue: {
 //       type: Number,
-//       required: true,
 //       default: 0,
 //     },
 
 //     increasePercentage: {
 //       type: Number,
-//       required: true,
 //       default: 0,
-//       min: 0,
-//       max: 100,
 //     },
 
 //     description: {
 //       type: String,
 //       default: "",
-//       trim: true,
 //     },
 
 //     status: {
@@ -63,74 +60,111 @@
 //   }
 // );
 
-// const Zone = mongoose.model<IZoneDocument>(
-//   "Zone",
-//   zoneSchema
-// );
-
-// export default Zone;
+// export default mongoose.model<IZoneDocument>("Zone", zoneSchema);
 
 
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, {
+  Schema,
+  Document,
+} from "mongoose";
 
-export interface IZoneDocument extends Document {
+export interface IZoneDocument
+  extends Document {
   zoneName: string;
   zoneCode: string;
-  prefix: string;
+
+  countryId: mongoose.Types.ObjectId;
+
+  postcodePrefixId: mongoose.Types.ObjectId;
+
+  zonePriceId: mongoose.Types.ObjectId;
+
+  markupId: mongoose.Types.ObjectId;
+
   waterValue: number;
   markupValue: number;
   increasePercentage: number;
+
   description?: string;
   status: boolean;
 }
 
-const zoneSchema = new Schema<IZoneDocument>(
-  {
-    zoneName: {
-      type: String,
-      required: true,
-    },
+const zoneSchema =
+  new Schema<IZoneDocument>(
+    {
+      zoneName: {
+        type: String,
+        required: true,
+        trim: true,
+      },
 
-    zoneCode: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+      zoneCode: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true,
+      },
 
-    prefix: {
-      type: String,
-      required: true,
-    },
+      // Country Relation
+      countryId: {
+        type:mongoose.Schema.Types.ObjectId,
+        ref: "Country",
+        required: true,
+      },
 
-    waterValue: {
-      type: Number,
-      default: 0,
-    },
+      // Postcode Prefix Relation
+      postcodePrefixId: {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"DeliveryPostcodePrefix",
+        required: true,
+      },
 
-    markupValue: {
-      type: Number,
-      default: 0,
-    },
+      // Zone Price Relation
+      zonePriceId: {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"DeliveryZonePrice",
+        required: true,
+      },
 
-    increasePercentage: {
-      type: Number,
-      default: 0,
-    },
+      // Markup Relation
+      markupId: {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"DeliveryMarkupPercentage",
+        required: true,
+      },
 
-    description: {
-      type: String,
-      default: "",
-    },
+      waterValue: {
+        type: Number,
+        default: 0,
+      },
 
-    status: {
-      type: Boolean,
-      default: true,
+      markupValue: {
+        type: Number,
+        default: 0,
+      },
+
+      increasePercentage: {
+        type: Number,
+        default: 0,
+      },
+
+      description: {
+        type: String,
+        default: "",
+      },
+
+      status: {
+        type: Boolean,
+        default: true,
+      },
     },
-  },
-  {
-    timestamps: true,
-    versionKey: false,
-  }
+    {
+      timestamps: true,
+      versionKey: false,
+    }
+  );
+
+export default mongoose.model<IZoneDocument>(
+  "Zone",
+  zoneSchema
 );
-
-export default mongoose.model<IZoneDocument>("Zone", zoneSchema);

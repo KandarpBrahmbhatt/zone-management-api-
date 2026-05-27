@@ -1,175 +1,251 @@
+
+
 // import mongoose from "mongoose";
 // import dotenv from "dotenv";
 // import Zone from "../models/zon.model";
-// import connectdb from "../config/db";
 
 // dotenv.config();
 
 // const TOTAL_RECORDS = 1000000; // 10 lakh
 // const BATCH_SIZE = 10000;
 
+// // CONNECT DB
 // const connectDB = async () => {
 //   try {
-//   mongoose.connect("mongodb://localhost:27017/zon-project")
-//     console.log(
-//       "MongoDB Connected Successfully"
-//     );
+//     await mongoose.connect("mongodb://localhost:27017/zon-project");
+//     console.log("MongoDB Connected Successfully");
 //   } catch (error) {
-//     console.log(
-//       "MongoDB Connection Error",
-//       error
-//     );
+//     console.log("MongoDB Connection Error", error);
 //     process.exit(1);
 //   }
 // };
 
-// const generateZoneData = (startIndex: number, batchSize: number) => {
-//   const zones = [];
+// // Generate data
+// const generateZoneData = (start: number, size: number) => {
+//   const data = [];
 
-//   for (let i = startIndex; i < startIndex + batchSize; i++) {
-//     zones.push({
+//   for (let i = start; i < start + size; i++) {
+//     data.push({
 //       zoneName: `Zone ${i + 1}`,
-//       prefix: `ZN${i + 1}`, // unique
-//       zoneCode: `ZONE${i + 1}`,
-//       waterValue:
-//         Math.floor(Math.random() * 500) + 50,
-//       markupValue:
-//         Math.floor(Math.random() * 100) + 1,
-//       increasePercentage:
-//         Math.floor(Math.random() * 50) + 1,
-//       description: `Zone ${
-//         i + 1
-//       } description`,
-//       status: Math.random() > 0.5,
+//       zoneCode: `ZONE_${i + 1}`, // UNIQUE SAFE
+//       prefix: `PR_${(i % 1000) + 1}`,
+
+//       waterValue: Math.floor(Math.random() * 500),
+//       markupValue: Math.floor(Math.random() * 100),
+//       increasePercentage: Math.floor(Math.random() * 50),
+
+//       description: `Zone description ${i + 1}`,
+//       status: Math.random() > 0.3,
 //     });
 //   }
 
-//   return zones;
+//   return data;
 // };
 
+// // SEED FUNCTION
 // const seedZones = async () => {
 //   try {
-//     console.time("Seeder Finished");
+//     console.time("Zone Seeder");
 
-//     for (let i = 0;i < TOTAL_RECORDS;i += BATCH_SIZE) {
-//       const zoneData =generateZoneData(i,BATCH_SIZE);
+//     await Zone.deleteMany();
 
-//       await Zone.insertMany(
-//         zoneData,
-//         {
-//           ordered: false,
-//         }
-//       );
+//     for (let i = 0; i < TOTAL_RECORDS; i += BATCH_SIZE) {
+//       const batch = generateZoneData(i, BATCH_SIZE);
+
+//       await Zone.insertMany(batch, {
+//         ordered: false,
+//       });
 
 //       console.log(
-//         `Inserted ${
-//           Math.min(
-//             i + BATCH_SIZE,
-//             TOTAL_RECORDS
-//           )
-//         } / ${TOTAL_RECORDS}`
+//         `Inserted ${Math.min(i + BATCH_SIZE, TOTAL_RECORDS)} / ${TOTAL_RECORDS}`
 //       );
 //     }
 
-//     console.log(
-//       "10 Lakh Zone Data Inserted Successfully"
-//     );
-
-//     console.timeEnd(
-//       "Seeder Finished"
-//     );
+//     console.log(" 10 Lakh Zones Inserted Successfully");
+//     console.timeEnd("Zone Seeder");
 
 //     process.exit(0);
 //   } catch (error) {
-//     console.log(
-//       "Seeder Error:",
-//       error
-//     );
+//     console.log(" Seeder Error:", error);
 //     process.exit(1);
 //   }
 // };
 
-// connectDB().then(() => {
-//   seedZones();
-// });
+// // RUN
+// const start = async () => {
+//   await connectDB();
+//   await seedZones();
+// };
 
+// start();
 
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+
 import Zone from "../models/zon.model";
+import Country from "../models/country.model";
+import DeliveryPostcodePrefix from "../models/deliveryPostCodePrifix.model";
+import DeliveryZonePrice from "../models/deliveryZonePrice.model";
+import DeliveryMarkupPercentage from "../models/markuppersentage.model";
 
 dotenv.config();
 
-const TOTAL_RECORDS = 1000000; // 10 lakh
-const BATCH_SIZE = 10000;
-
-// CONNECT DB
-const connectDB = async () => {
+const seed = async () => {
   try {
-    await mongoose.connect("mongodb://localhost:27017/zon-project");
-    console.log("MongoDB Connected Successfully");
-  } catch (error) {
-    console.log("MongoDB Connection Error", error);
-    process.exit(1);
-  }
-};
+    // MongoDB Connection
+    await mongoose.connect(process.env.MONGO_URL || "mongodb://localhost:27017/zon-project");
+    console.log(" Connected DB");
 
-// Generate data
-const generateZoneData = (start: number, size: number) => {
-  const data = [];
+    // OPTIONAL:
+    // Delete old data before seeding
+    await Zone.deleteMany({});
+    console.log(" Old Zones Deleted");
 
-  for (let i = start; i < start + size; i++) {
-    data.push({
-      zoneName: `Zone ${i + 1}`,
-      zoneCode: `ZONE_${i + 1}`, // UNIQUE SAFE
-      prefix: `PR_${(i % 1000) + 1}`,
+    // Fetch required ObjectIds
+    const countries = await Country.find()
+      .select("_id")
+      .lean();
 
-      waterValue: Math.floor(Math.random() * 500),
-      markupValue: Math.floor(Math.random() * 100),
-      increasePercentage: Math.floor(Math.random() * 50),
+    const prefixes = await DeliveryPostcodePrefix.find()
+      .select("_id")
+      .lean();
 
-      description: `Zone description ${i + 1}`,
-      status: Math.random() > 0.3,
-    });
-  }
+    const zonePrices = await DeliveryZonePrice.find()
+      .select("_id")
+      .lean();
 
-  return data;
-};
+    const markups = await DeliveryMarkupPercentage.find()
+      .select("_id")
+      .lean();
 
-// SEED FUNCTION
-const seedZones = async () => {
-  try {
-    console.time("Zone Seeder");
+    // Validation
+    if (
+      countries.length === 0 ||
+      prefixes.length === 0 ||
+      zonePrices.length === 0 ||
+      markups.length === 0
+    ) {
+      console.log(
+        " Dependent collections are empty"
+      );
 
-    await Zone.deleteMany();
+      process.exit(1);
+    }
 
-    for (let i = 0; i < TOTAL_RECORDS; i += BATCH_SIZE) {
-      const batch = generateZoneData(i, BATCH_SIZE);
+    // Config
+    const BATCH_SIZE = 1000;
 
-      await Zone.insertMany(batch, {
+    const TOTAL = 1000000; // 10 lakh
+
+    console.time("Seeding Time");
+
+    // Batch Insert
+    for (let i = 0; i < TOTAL; i += BATCH_SIZE) {
+      const zones = [];
+
+      for (let j = 0; j < BATCH_SIZE && i + j < TOTAL; j++) {
+        // Random Related ObjectIds
+        const country =
+          countries[
+          Math.floor(
+            Math.random() *
+            countries.length
+          )
+          ];
+
+        const prefix =
+          prefixes[
+          Math.floor(
+            Math.random() *
+            prefixes.length
+          )
+          ];
+
+        const zonePrice =
+          zonePrices[
+          Math.floor(
+            Math.random() *
+            zonePrices.length
+          )
+          ];
+
+        const markup =
+          markups[
+          Math.floor(
+            Math.random() *
+            markups.length
+          )
+          ];
+
+        zones.push({
+          zoneName: `Zone ${i + j + 1
+            }`,
+
+          zoneCode: `ZONE-${i + j + 1
+            }`,
+
+          // Store ObjectIds
+          countryId: country._id,
+
+          postcodePrefixId:
+            prefix._id,
+
+          zonePriceId:
+            zonePrice._id,
+
+          markupId:
+            markup._id,
+
+          waterValue:
+            Math.floor(
+              Math.random() * 500
+            ) + 1,
+
+          markupValue:
+            Math.floor(
+              Math.random() * 100
+            ) + 1,
+
+          increasePercentage:
+            Math.floor(
+              Math.random() * 50
+            ) + 1,
+
+          description: `Dummy Zone ${i + j + 1
+            }`,
+
+          status:
+            Math.random() > 0.5,
+        });
+      }
+
+      // Insert Batch
+      await Zone.insertMany(zones, {
         ordered: false,
       });
 
       console.log(
-        `Inserted ${Math.min(i + BATCH_SIZE, TOTAL_RECORDS)} / ${TOTAL_RECORDS}`
+        ` Inserted: ${Math.min(
+          i + BATCH_SIZE,
+          TOTAL
+        )}`
       );
     }
 
-    console.log(" 10 Lakh Zones Inserted Successfully");
-    console.timeEnd("Zone Seeder");
+    console.timeEnd("Seeding Time");
+
+    console.log(" Seeder Completed Successfully");
 
     process.exit(0);
   } catch (error) {
-    console.log(" Seeder Error:", error);
+    console.error(
+      "Seeder Error:",
+      error
+    );
+
     process.exit(1);
   }
 };
 
-// RUN
-const start = async () => {
-  await connectDB();
-  await seedZones();
-};
-
-start();
+seed();

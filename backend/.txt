@@ -1,0 +1,271 @@
+aggregation in mongdb nodejs 
+
+MongoDB Aggregation Pipeline is used when you want to transform, filter, group, join, calculate, or analyze data. It works like a pipeline where data passes through different stages.
+
+think like this
+
+Collection Data
+      ↓
+   $match (filter)
+      ↓
+   $group (group data)
+      ↓
+   $sort (sort)
+      ↓
+   $project (select fields)
+      ↓
+   Result
+
+1. $match → Filter Data (Like find())
+
+Use when you want to filter documents.
+example data =>
+[
+  {
+    "name": "Kandarp",
+    "city": "Ahmedabad",
+    "salary": 50000
+  },
+  {
+    "name": "Rahul",
+    "city": "Mumbai",
+    "salary": 70000
+  }
+]
+Example
+const users = await User.aggregate([
+  {
+    $match: {
+      city: "Ahmedabad"
+    }
+  }
+]);
+
+console.log(users);
+
+output=>
+[
+  {
+    "name": "Kandarp",
+    "city": "Ahmedabad",
+    "salary": 50000
+  }
+]
+
+Scenario
+Use when:
+Filtering data
+Search
+Pagination filter
+Status active/inactive
+example
+$match: { status: true }
+
+2. $project → Select Fields
+
+Used to show only required fields.
+
+const users = await User.aggregate([
+  {
+    $project: {
+      name: 1,
+      salary: 1,
+      _id: 0
+    }
+  }
+]);
+
+output[
+  {
+    "name": "Kandarp",
+    "salary": 50000
+  }
+]
+
+Scenario
+Use when:
+
+Hide password
+Show selected fields
+Rename field
+
+example
+{
+  $project: {
+    userName: "$name"
+  }
+}
+
+3. $group → Group Data
+
+Like SQL GROUP BY.
+
+example Collection
+
+[
+  { "city": "Ahmedabad", "salary": 50000 },
+  { "city": "Ahmedabad", "salary": 30000 },
+  { "city": "Mumbai", "salary": 40000 }
+]
+
+const result = await User.aggregate([
+  {
+    $group: {
+      _id: "$city",
+      totalSalary: {
+        $sum: "$salary"
+      }
+    }
+  }
+]);
+
+output
+[
+  {
+    "_id": "Ahmedabad",
+    "totalSalary": 80000
+  },
+  {
+    "_id": "Mumbai",
+    "totalSalary": 40000
+  }
+]
+
+7. $lookup → Join Collections
+
+Very important 
+
+Works like SQL JOIN.
+
+Suppose:
+
+Users Collection
+{
+  "_id": 1,
+  "name": "Kandarp"
+}
+order Collection
+{
+  "userId": 1,
+  "product": "Laptop"
+}
+example
+const data = await User.aggregate([
+  {
+    $lookup: {
+      from: "orders",
+      localField: "_id",
+      foreignField: "userId",
+      as: "orders"
+    }
+  }
+]);
+
+output
+[
+  {
+    "_id": 1,
+    "name": "Kandarp",
+    "orders": [
+      {
+        "product": "Laptop"
+      }
+    ]
+  }
+]
+
+8. $unwind → Break Array
+
+If $lookup returns array and you want object.
+
+Example
+Before
+{
+  name: "Kandarp",
+  orders: [
+    { product: "Laptop" },
+    { product: "Phone" }
+  ]
+}
+example
+{
+  $unwind: "$orders"
+}
+output
+{
+  name: "Kandarp",
+  orders: {
+    product: "Laptop"
+  }
+}
+
+
+11. $facet → Multiple Queries Together
+
+Very important for pagination 
+
+const result = await User.aggregate([
+  {
+    $facet: {
+      data: [
+        { $skip: 0 },
+        { $limit: 10 }
+      ],
+      totalCount: [
+        { $count: "count" }
+      ]
+    }
+  }
+]);
+
+12. $expr
+
+Compare fields.
+
+example
+{
+  $match: {
+    $expr: {
+      $gt: ["$salary", 50000]
+    }
+  }
+}
+
+$cond ->if else
+{
+  $project: {
+    salaryStatus: {
+      $cond: {
+        if: { $gt: ["$salary", 50000] },
+        then: "High",
+        else: "Low"
+      }
+    }
+  }
+}
+
+Search API
+
+Used a lot in backend:
+
+{
+  $match: {
+    name: {
+      $regex: search,
+      $options: "i"
+    }
+  }
+}
+example
+search = "kan"
+
+matches:
+Kandarp
+
+good=>
+$match → $lookup
+
+
+2. $lookup
+
+Used to join two collections.
