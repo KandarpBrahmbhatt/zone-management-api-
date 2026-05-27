@@ -83,11 +83,11 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-import Zone from "../models/zon.model";
-import Country from "../models/country.model";
-import DeliveryPostcodePrefix from "../models/deliveryPostCodePrifix.model";
-import DeliveryZonePrice from "../models/deliveryZonePrice.model";
-import DeliveryMarkupPercentage from "../models/markuppersentage.model";
+import Zone from "../models/zon.model.ts";
+import Country from "../models/country.model.ts";
+import DeliveryPostcodePrefix from "../models/deliveryPostCodePrifix.model.ts";
+import DeliveryZonePrice from "../models/deliveryZonePrice.model.ts";
+import DeliveryMarkupPercentage from "../models/markuppersentage.model.ts";
 
 dotenv.config();
 

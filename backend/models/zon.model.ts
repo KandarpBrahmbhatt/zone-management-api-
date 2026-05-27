@@ -87,10 +87,10 @@ export interface IZoneDocument
 
   description?: string;
   status: boolean;
+  isDeleted: boolean; // ADD 
 }
 
-const zoneSchema =
-  new Schema<IZoneDocument>(
+const zoneSchema = new Schema<IZoneDocument>(
     {
       zoneName: {
         type: String,
@@ -157,10 +157,14 @@ const zoneSchema =
         type: Boolean,
         default: true,
       },
+      isDeleted: {
+        type: Boolean,
+        default: false,
+      },
     },
     {
       timestamps: true,
-      versionKey: false,
+      // versionKey: false,
     }
   );
 

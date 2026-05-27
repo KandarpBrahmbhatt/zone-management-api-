@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const zon_controller_1 = require("../controller/zon.controller");
+const aggragation_controller_1 = require("../controller/aggragation.controller");
+const zonRouter = express_1.default.Router();
+zonRouter.post("/create", zon_controller_1.createZon);
+zonRouter.get("/get", zon_controller_1.getAllZone);
+zonRouter.put("/update/:id", zon_controller_1.updateZone);
+zonRouter.get("/get/:id", zon_controller_1.getSingleZone);
+zonRouter.delete("/delete/:id", zon_controller_1.deletedZone);
+zonRouter.get("/analytics", zon_controller_1.getZoneAnalytics);
+zonRouter.get("/getAllZoneData", zon_controller_1.getAllZoneData);
+zonRouter.get("/getprifixValue", zon_controller_1.newData);
+zonRouter.get("/zonesAggregation", aggragation_controller_1.zonesAggregation);
+zonRouter.get("/ZoneListing", aggragation_controller_1.ZoneListing);
+exports.default = zonRouter;
