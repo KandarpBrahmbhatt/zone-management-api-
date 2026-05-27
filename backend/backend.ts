@@ -9,7 +9,7 @@ app.use(express.json());
 
 app.use("/api/zone", zonRouter);
 
-startZoneCron();
+// startZoneCron();
 
 const PORT = 8000;
 
